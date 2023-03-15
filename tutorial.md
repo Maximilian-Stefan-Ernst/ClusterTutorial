@@ -78,16 +78,32 @@ There are many more advanced options available (for example `--cores-per-socket`
 
 ## Quick Test Job
 
-Let's submit an example job. We first create a file 
+Let's submit an example job:
 
-Basic slurm commands for Job allocation:
+```console
+srun --partition test -n 20 Rscript sim.R
+```
 
-- `sbatch`: Submit for later execution
-- `salloc`: interactive mode (shell)
-- `srun`: launch job (now)
-- `sattach`: I/O???
 
-We typically use `sbatch` to submit our jobs, and `salloc`
+## Quick Test Job
+
+Let's submit an example job:
+
+```console
+sbatch job.sh
+```
+
+We typically use `srun` to start a quick interactive session, and `sbatch` to submit our jobs to the queue (and have lunch).
+
+Let's see if our job is/has been running
+
+```console
+squeue -u ernst
+sacct -u ernst
+```
+
+Some other usefull slurm commands are
+- `scancel JOBID` or `scancel -u $USER`
 
 # Get Julia/Singularity up and running
 
