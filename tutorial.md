@@ -139,8 +139,14 @@ Okay, now let's use Julia interactively with more resources:
 
 ```console
 srun --partition quick --nodes 2 --ntasks-per-node 2 --cpus-per-task 2 --pty /bin/bash
-singularity shell --bind /home/mpib/ernst/ClusterTutorial:/mnt my_container.simg
-julia
+singularity shell --writable \
+    --bind /home/mpib/ernst/ClusterTutorial:/mnt my_container.simg \
+    --bind /etc/slurm-llnl:/etc/slurm-llnl \
+    --bind /run/munge:/run/munge \
+    julia
+cd("/mnt")
+using Distributed, SlurmClusterManager
+addprocs(SlurmManager(); exename = "julia")
 ```
 
 # Container Folder
