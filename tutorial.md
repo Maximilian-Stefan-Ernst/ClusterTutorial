@@ -107,18 +107,33 @@ Some other usefull slurm commands are
 
 # Get Julia/Singularity up and running
 
-Some software is preinstalled on the cluster. However, we may want to be able to use software that has not been installed by the admin. For this purpose, we can use Singularity. For using Julia, Aaron has built a docker container and hosts it on GitLab:
+Some software is preinstalled on the cluster. However, we may want to be able to use software that has not been installed by the admin, or a specific version with specific packages installed. For this purpose, we can use Singularity. For using Julia, Aaron has built a docker container and hosts it on GitLab:
+
+
+**DON'T EXECUTE**
 
 ```console
 singularity pull docker://registry.git.mpib-berlin.mpg.de/peikert/sem-jl-docker:latest
 ```
-
 To be able to install new julia packages in the container, we need to convert the container to a writeable one (called "sandbox"):
 
 ```console
 singularity build --sandbox my_container.simg sem-jl-docker_latest.sif
 ```
 
+However, since this takes *forever*, we instead use one of the containers that was build by the admin:
+
+```console
+singularity build --sandbox my_container.simg /data/container/julia/julia-1.8.2.sif
+```
+
+Let's open a shell and install a package:
+
+```console
+singularity shell --writable my_container.simg
+julia
+] add SlurmClusterManager
+```
 
 
 # Container Folder
@@ -127,6 +142,7 @@ singularity build --sandbox my_container.simg sem-jl-docker_latest.sif
 # Prepare
 
 - "A future for tardis" https://git.mpib-berlin.mpg.de/peikert/a-future-for-tardis: until R-specific part
+- send your GH account and clone repo
 
 # Footnotes
 
