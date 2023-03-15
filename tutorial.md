@@ -55,21 +55,30 @@ srun -p test --pty /bin/bash
 
 which gives us a terminal on one of the nodes of the *test* queue.
 
+## Request Resources
+
 To submit a real job, we first need to decide how many resources we need:
 
-- `--mem=`*MB*: memory per node
+- `--time 24:0:0`: After this, the job is terminated
+- `--mem 8GB`: Max. memory per node. If you use more than this, your job is terminated.
+- `--ntasks`: how many tasks
+- `--cpus-per-task 2`: if you want to use multi-threading
+- `--mem-per-cpu 4GB`
 
+We then decide what the appropriate partition is:
+- `--partition test`: which queue to submit to
 
+The list of partitions can be found [here](https://tardis.mpib-berlin.mpg.de/docs).
 
-#SBATCH --partition test
-#SBATCH --time 0:10:0
-#SBATCH --nodes 1
-#SBATCH --ntasks-per-node 2
-#SBATCH --cpus-per-task 2
-#SBATCH --mem 8GB
-#SBATCH --workdir /home/mpib/ernst/SEFA/cluster
+We should also submit some general infos
+- `--workdir project/data`: working directory of your job
+- `--job-name` job-name
 
-There are many more advanced options available (for example `--cores-per-socket`). Also see this overview on [srun flags](https://slurm.schedmd.com/srun.html).
+There are many more advanced options available (for example `--cores-per-socket`), see the documentation on [sbatch flags](https://slurm.schedmd.com/sbatch.html).
+
+## Quick Test Job
+
+Let's submit an example job. We first create a file 
 
 Basic slurm commands for Job allocation:
 
@@ -97,5 +106,12 @@ singularity build --sandbox my_container.simg sem-jl-docker_latest.sif
 
 
 # Container Folder
+
+
+# Prepare
+
+- "A future for tardis" https://git.mpib-berlin.mpg.de/peikert/a-future-for-tardis: until R-specific part
+
+# Footnotes
 
 [^1]: This is partly taken from [this introductory series about slurm on youtube](https://www.youtube.com/watch?v=NH_Fb7X6Db0).
