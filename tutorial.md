@@ -142,11 +142,10 @@ srun --partition quick --nodes 2 --ntasks-per-node 2 --cpus-per-task 2 --pty /bi
 singularity shell --writable \
     --bind /home/mpib/ernst/ClusterTutorial:/mnt my_container.simg \
     --bind /etc/slurm-llnl:/etc/slurm-llnl \
-    --bind /run/munge:/run/munge \
-    julia
+    --bind /run/munge:/run/munge
 cd("/mnt")
 using Distributed, SlurmClusterManager
-addprocs(SlurmManager(); exename = "julia")
+addprocs(SlurmManager(); exename = "julia", dir = "", topology = :master_worker)
 ```
 
 # Container Folder
