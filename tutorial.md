@@ -107,8 +107,11 @@ Some other usefull slurm commands are
 
 # Get Julia/Singularity up and running
 
-Some software is preinstalled on the cluster. However, we may want to be able to use software that has not been installed by the admin, or a specific version with specific packages installed. For this purpose, we can use Singularity. For using Julia, Aaron has built a docker container and hosts it on GitLab:
+Some software is preinstalled on the cluster. However, we may want to be able to use software that has not been installed by the admin, or a specific version with specific packages installed. For this purpose, we can use Singularity. 
 
+## From Gitlab
+
+For using Julia, Aaron has built a docker container and hosts it on GitLab:
 
 **DON'T EXECUTE**
 
@@ -121,17 +124,27 @@ To be able to install new julia packages in the container, we need to convert th
 singularity build --sandbox my_container.simg sem-jl-docker_latest.sif
 ```
 
+## From the Cluster
+
 However, since this takes *forever*, we instead use one of the containers that was build by the admin:
 
 ```console
 singularity build --sandbox my_container.simg /data/container/julia/julia-1.8.2.sif
 ```
 
-Let's open a shell and install a package:
+Let's open a shell:
 
 ```console
 singularity shell --writable my_container.simg
 julia
+```
+
+Let's install the package that communicates to slurm for us:
+
+```console
+module load julia
+julia
+using SlurmClusterManager
 ] add SlurmClusterManager
 ```
 
@@ -139,17 +152,35 @@ Okay, now let's use Julia interactively with more resources:
 
 ```console
 srun --partition quick --nodes 2 --ntasks-per-node 2 --cpus-per-task 2 --pty /bin/bash
+julia
+using Distributed, SlurmClusterManager
+addprocs(SlurmManager(); exename = "juliac", dir = "/home/mpib/ernst/ClusterTutorial/julia")
+```
+
+Let's run some code:
+
+````console
+println("Number of processes: ", nprocs())
+println("Number of workers: ", nworkers())
+
+# each worker gets its id, process id and hostname
+for i in workers()
+    id, pid, host = fetch(@spawnat i (myid(), getpid(), gethostname()))
+    println(id, " " , pid, " ", host)
+end
+```
+
+## From Container to Container
+
+```console
+srun --partition quick --nodes 2 --ntasks-per-node 2 --cpus-per-task 2 --pty /bin/bash
 singularity shell --writable \
     --bind /home/mpib/ernst/ClusterTutorial:/mnt my_container.simg \
     --bind /etc/slurm-llnl:/etc/slurm-llnl \
     --bind /run/munge:/run/munge
-cd("/mnt")
 using Distributed, SlurmClusterManager
-addprocs(SlurmManager(); exename = "julia", dir = "", topology = :master_worker)
+addprocs(SlurmManager(); exename = "julia", dir = "")
 ```
-
-# Container Folder
-
 
 # Prepare
 
