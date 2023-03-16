@@ -81,15 +81,6 @@ There are many more advanced options available (for example `--cores-per-socket`
 Let's submit an example job:
 
 ```console
-srun --partition test -n 20 Rscript sim.R
-```
-
-
-## Quick Test Job
-
-Let's submit an example job:
-
-```console
 sbatch job.sh
 ```
 
