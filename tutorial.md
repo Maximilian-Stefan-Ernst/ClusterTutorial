@@ -150,7 +150,7 @@ addprocs(SlurmManager(); exename = "juliac", dir = "/home/mpib/ernst/ClusterTuto
 
 Let's run some code:
 
-````console
+```console
 println("Number of processes: ", nprocs())
 println("Number of workers: ", nworkers())
 
@@ -176,7 +176,8 @@ addprocs(SlurmManager(); exename = "julia", dir = "")
 # Prepare
 
 - "A future for tardis" https://git.mpib-berlin.mpg.de/peikert/a-future-for-tardis: until R-specific part
-- send your GH account and clone repo
+- clone repo
+- https://maximilian-stefan-ernst.github.io/ClusterTutorial/tutorial
 
 # Footnotes
 
