@@ -1,6 +1,6 @@
 # How to use Julia on TARDIS
 
-In this tutorial, ...
+In this tutorial, you learn how to connect to TARDIS and use slurm, julia and singularity.
 
 # Set up Cluster
 First, you have to connect to the VPN of the MPI:
@@ -21,6 +21,8 @@ We now need to set up a remote directory. This depends on your os and file manag
 
 ![](figures/tardis_network_folder.png)
 
+Now please copy the "ClusterTutorial" into your home directory on TARDIS.
+
 # Some slurm basics
 
 Slurm (Simple Linus Utility for Resource Management) is a so-called "resource manager". Basically, you have to tell slurm how many ressources you want to use, and slurm will allocate those resources on the cluster for you. This way, you don't have to think about what specific part of the cluster you want to use (and you don't need extensive knowledge of the cluster architecture). Slurm is also a "job scheduler", meaning if many persons are using the cluster at the same time, slurm schedules the tasks and ensures smooth and fair scheduling of the work.[^1]
@@ -33,7 +35,7 @@ We can ask for
     - Memory
 - Time
 
-From the tardis documentation, we find that we have
+From the tardis [documentation](https://tardis.mpib-berlin.mpg.de/), we find that we have
 
 - 832 Intel® Xeon® CPU E5-2670 CPU **cores**(no HT) inside 48 Dell m6x0 blade **servers**  
 - 7 dedicated **nodes** housing 24 Nvidia **GPUs**  
@@ -68,7 +70,7 @@ To submit a real job, we first need to decide how many resources we need:
 We then decide what the appropriate partition is:
 - `--partition test`: which queue to submit to
 
-The list of partitions can be found [here](https://tardis.mpib-berlin.mpg.de/docs).
+The list of partitions can be found in the tardis [docs](https://tardis.mpib-berlin.mpg.de/docs) (Resource Manager/General).
 
 We should also submit some general infos
 - `--workdir project/data`: working directory of your job
@@ -78,10 +80,12 @@ There are many more advanced options available (for example `--cores-per-socket`
 
 ## Quick Test Job
 
-Let's submit an example job:
+First, take a look at the file `R/job.sh`.
+
+Let's submit this as an example job:
 
 ```console
-sbatch job.sh
+sbatch R/job.sh
 ```
 
 We typically use `srun` to start a quick interactive session, and `sbatch` to submit our jobs to the queue (and have lunch).
@@ -123,6 +127,7 @@ However, since this takes *forever*, we instead use one of the containers that w
 singularity build --sandbox my_container.simg /data/container/julia/julia-1.8.2.sif
 ```
 
+we now have created a container called "my_container.simg" in our ClusterTutorial folder.
 Let's open a shell:
 
 ```console
@@ -159,9 +164,46 @@ for i in workers()
     id, pid, host = fetch(@spawnat i (myid(), getpid(), gethostname()))
     println(id, " " , pid, " ", host)
 end
+
+# are we in a container?
+
+fetch(@spawnat 2 ENV["SINGULARITY_NAME"])
 ```
 
-## From Container to Container
+Let's compute something:
+
+```console
+@everywhere function f(x)
+    sleep(5)
+    return x^2, myid()
+end
+
+a = rand(40)
+res = Any[]
+
+for i in 1:40
+    res_iter = @spawnat :any f(a[i])
+    push!(res, res_iter)
+end
+
+res = fetch.(res)
+```
+
+# Ressources
+- "A future for tardis" https://git.mpib-berlin.mpg.de/peikert/a-future-for-tardis: Aaron explains a nice workflow for using TARDIS from R
+- "Parallel Computing and Scientific Machine Learning": a lecture series in julia, but also recommended for other language users, on the basics of scientific computing (and parallel computing)
+    - Youtube: https://youtube.com/playlist?list=PLCAl7tjCwWyGjdzOOnlbGnVNZk0kB8VSa
+    - As a book: https://book.sciml.ai/
+    - esp. recommended: ch. 5+6: "basics of single node parallel computing" and "flavors of parallelism" (https://book.sciml.ai/notes/05-The_Basics_of_Single_Node_Parallel_Computing/)
+- TARDIS docs: https://tardis.mpib-berlin.mpg.de/docs
+- slurm docs: https://slurm.schedmd.com/
+- sbatch flags: https://slurm.schedmd.com/sbatch.html
+
+# Footnotes
+
+[^1]: This is partly taken from [this introductory series about slurm on youtube](https://www.youtube.com/watch?v=NH_Fb7X6Db0).
+
+# From Container to Container
 
 ```console
 srun --partition quick --nodes 2 --ntasks-per-node 2 --cpus-per-task 2 --pty /bin/bash
@@ -172,13 +214,3 @@ singularity shell --writable \
 using Distributed, SlurmClusterManager
 addprocs(SlurmManager(); exename = "julia", dir = "")
 ```
-
-# Prepare
-
-- "A future for tardis" https://git.mpib-berlin.mpg.de/peikert/a-future-for-tardis: until R-specific part
-- clone repo
-- https://maximilian-stefan-ernst.github.io/ClusterTutorial/tutorial
-
-# Footnotes
-
-[^1]: This is partly taken from [this introductory series about slurm on youtube](https://www.youtube.com/watch?v=NH_Fb7X6Db0).
