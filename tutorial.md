@@ -202,15 +202,3 @@ res = fetch.(res)
 # Footnotes
 
 [^1]: This is partly taken from [this introductory series about slurm on youtube](https://www.youtube.com/watch?v=NH_Fb7X6Db0).
-
-# From Container to Container
-
-```console
-srun --partition quick --nodes 2 --ntasks-per-node 2 --cpus-per-task 2 --pty /bin/bash
-singularity shell --writable \
-    --bind /home/mpib/ernst/ClusterTutorial:/mnt my_container.simg \
-    --bind /etc/slurm-llnl:/etc/slurm-llnl \
-    --bind /run/munge:/run/munge
-using Distributed, SlurmClusterManager
-addprocs(SlurmManager(); exename = "julia", dir = "")
-```
